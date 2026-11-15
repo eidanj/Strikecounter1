@@ -1,0 +1,14 @@
+# Strike Counter 1 — static site, no build step.
+[build]
+  publish = "."
+  command = ""
+
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"

@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0b0a09">
+  <title>Strike Counter 1</title>
+  <meta name="description" content="Strike Counter 1 — a lighthearted 3D tactical shooter parody in a sunny Italian town. No gore, just gelato.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><circle cx='32' cy='32' r='26' fill='%23ff9a1f'/><circle cx='32' cy='32' r='14' fill='none' stroke='%23111' stroke-width='5'/><path d='M32 4v16M32 44v16M4 32h16M44 32h16' stroke='%23111' stroke-width='5'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@700&family=Oswald:wght@500;700&family=Pacifico&family=Playfair+Display:ital,wght@0,700;1,700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <!-- ============ LOADING ============ -->
+  <div id="loading" class="overlay">
+    <div class="loadbox">
+      <div class="logo small"><span>STRIKE</span><span class="o">COUNTER</span><span class="one">1</span></div>
+      <div class="bar"><i id="loadBar"></i></div>
+      <div id="loadText">Warming up the pizza oven…</div>
+      <div class="tip" id="loadTip"></div>
+    </div>
+  </div>
+
+  <!-- ============ MAIN MENU ============ -->
+  <div id="menu" class="overlay hidden">
+    <div class="menu-left">
+      <div class="logo"><span>STRIKE</span><span class="o">COUNTER</span><span class="one">1</span></div>
+      <div class="tagline">GLOBAL AL DENTE EDITION</div>
+      <nav class="mainnav">
+        <button data-panel="play" class="big">Play</button>
+        <button data-panel="settings">Settings</button>
+        <button data-panel="tutorial">How to Play</button>
+        <button data-panel="credits">About</button>
+      </nav>
+      <div class="foot">A lighthearted parody. No gore — eliminated players just go <i>poof</i>.<br>Map: <b>de_Bellavista</b> · Tortellini vs Counter-Tortellini</div>
+    </div>
+
+    <!-- PLAY -->
+    <section id="panel-play" class="panel hidden">
+      <h2>Play</h2>
+      <div class="modes">
+        <div class="mode" data-mode="tdm"><h3>Team Deathmatch</h3><p>Tactical rounds. Tortellini vs Counter-Tortellini. Teammate bots don't respawn mid-round — last team standing wins the round.</p></div>
+        <div class="mode" data-mode="ffa"><h3>Free-For-All</h3><p>Everyone for themselves. First to 20 eliminations wins. Bots respawn quickly; you respawn after 20s.</p></div>
+      </div>
+      <div class="opts">
+        <label class="tdm-only">Your team <select id="optTeam"><option value="auto">Auto</option><option value="T">Tortellini (attackers)</option><option value="CT">Counter-Tortellini (defenders)</option></select></label>
+        <label class="tdm-only">Team size <select id="optTeamSize"><option>2</option><option>3</option><option>4</option><option selected>5</option><option>6</option><option>7</option><option>8</option></select></label>
+        <label class="tdm-only">Rounds to win <select id="optRounds"><option>3</option><option selected>5</option><option>8</option></select></label>
+        <label class="ffa-only">Bots <select id="optBots"><option>3</option><option>5</option><option>7</option><option selected>9</option><option>11</option><option>13</option><option>15</option></select></label>
+        <label>Bot difficulty <select id="optDiff"><option value="easy">Easy</option><option value="normal" selected>Normal</option><option value="hard">Hard</option></select></label>
+        <label>Primary <select id="optPrimary"></select></label>
+        <label>Secondary <select id="optSecondary"></select></label>
+        <label>Name <input id="optName" maxlength="16" value="You"></label>
+      </div>
+      <button id="btnDeploy" class="cta">Deploy ▸</button>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="panel-settings" class="panel hidden">
+      <h2>Settings</h2>
+      <div class="tabs"><button data-tab="gfx" class="on">Graphics</button><button data-tab="ctl">Controls</button><button data-tab="aud">Audio</button><button data-tab="gam">Gameplay</button></div>
+      <div class="tab" id="tab-gfx">
+        <div class="presets" id="presets"></div>
+        <div class="presetBlurb" id="presetBlurb"></div>
+        <div class="grid2">
+          <label>Render scale <input type="range" id="setScale" min="0.4" max="3" step="0.05"><output></output></label>
+          <label>View distance <input type="range" id="setDraw" min="60" max="600" step="10"><output></output></label>
+          <label>Grass density <input type="range" id="setGrass" min="0" max="2.5" step="0.05"><output></output></label>
+          <label>Shadows <select id="setShadows"><option value="0">Off</option><option value="512">Low</option><option value="1024">Medium</option><option value="2048">High</option><option value="4096">Ultra</option><option value="8192">Insane</option></select></label>
+          <label>Texture quality <select id="setTex"><option value="128">Potato</option><option value="256">Low</option><option value="512">Medium</option><option value="1024">High</option><option value="2048">Insane</option></select></label>
+          <label>Anti-aliasing <select id="setAA"><option value="none">Off</option><option value="fxaa">FXAA</option><option value="smaa">SMAA</option></select></label>
+          <label class="chk"><input type="checkbox" id="setPost"> Post-processing</label>
+          <label class="chk"><input type="checkbox" id="setBloom"> Bloom</label>
+          <label class="chk"><input type="checkbox" id="setAO"> Ambient occlusion</label>
+          <label class="chk"><input type="checkbox" id="setFps"> Show FPS</label>
+        </div>
+      </div>
+      <div class="tab hidden" id="tab-ctl">
+        <div class="grid2">
+          <label>Mouse sensitivity <input type="range" id="setSens" min="0.1" max="4" step="0.05"><output></output></label>
+          <label>ADS sensitivity <input type="range" id="setAdsSens" min="0.2" max="1.5" step="0.05"><output></output></label>
+          <label>Field of view <input type="range" id="setFov" min="70" max="115" step="1"><output></output></label>
+          <label>Sprint mode <select id="setSprint"><option value="hold">Hold (double-tap W, keep holding)</option><option value="toggle">Toggle (double-tap W on/off)</option></select></label>
+          <label class="chk"><input type="checkbox" id="setInvert"> Invert mouse Y</label>
+          <label>Touch controls <select id="setTouch"><option value="auto">Auto (phones &amp; tablets)</option><option value="on">Always on</option><option value="off">Off</option></select></label>
+          <label>Touch look sensitivity <input type="range" id="setTouchSens" min="0.3" max="3" step="0.05"><output></output></label>
+        </div>
+        <p class="note">Sprint is triggered by <kbd>double-tapping W</kbd>. In <b>Hold</b> mode you sprint while W stays held. In <b>Toggle</b> mode sprint stays on until you double-tap again, stop, crouch, aim or run out of energy.</p>
+      </div>
+      <div class="tab hidden" id="tab-aud">
+        <div class="grid2">
+          <label>Master volume <input type="range" id="setVol" min="0" max="1" step="0.05"><output></output></label>
+          <label>Ambience <input type="range" id="setAmb" min="0" max="1" step="0.05"><output></output></label>
+        </div>
+      </div>
+      <div class="tab hidden" id="tab-gam">
+        <div class="grid2">
+          <label>Head bob <input type="range" id="setBob" min="0" max="1.5" step="0.05"><output></output></label>
+          <label>Crosshair color <input type="color" id="setCross"></label>
+          <label class="chk"><input type="checkbox" id="setDot"> Crosshair center dot</label>
+        </div>
+      </div>
+    </section>
+
+    <!-- TUTORIAL -->
+    <section id="panel-tutorial" class="panel hidden">
+      <h2>How to Play</h2>
+      <div class="keys">
+        <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><span>Move</span></div>
+        <div><kbd>W</kbd><kbd>W</kbd><span>Double-tap W to <b>sprint</b> (+35% speed, drains energy)</span></div>
+        <div><kbd>Space</kbd><span>Jump</span></div>
+        <div><kbd>Shift</kbd><span>Crouch (smaller hitbox, quieter, steadier aim)</span></div>
+        <div><kbd>Q</kbd><span><b>Dodge</b> in your move direction (bots use it too!)</span></div>
+        <div><kbd>C</kbd><span>Toggle <b>first / third-person</b> camera</span></div>
+        <div><kbd>LMB</kbd><span>Fire / swing</span></div>
+        <div><kbd>RMB</kbd><span>Aim down sights · snipers: click to zoom (x2)</span></div>
+        <div><kbd>R</kbd><span>Reload</span></div>
+        <div><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd><span>Primary · Pistol · Stiletto · Hatchet (or mouse wheel)</span></div>
+        <div><kbd>B</kbd><span>Loadout menu (applies instantly in freeze time / right after spawning)</span></div>
+        <div><kbd>F</kbd><span>Inspect weapon</span></div>
+        <div><kbd>Tab</kbd><span>Scoreboard</span></div>
+        <div><kbd>Esc</kbd><span>Pause</span></div>
+      </div>
+      <div class="touchkeys">
+        <h4>On a phone or tablet</h4>
+        <div class="wide"><i class="ti move"></i><span><b>Left thumb</b>: move anywhere on the left. Push the stick to the edge to <b>sprint</b>.</span></div>
+        <div class="wide"><i class="ti look"></i><span><b>Right thumb</b>: drag to look. Drag the fire button to aim while shooting.</span></div>
+        <div><i data-icon="fire"></i><span>Fire</span><i data-icon="aim"></i><span>Aim / scope</span><i data-icon="jump"></i><span>Jump</span></div>
+        <div><i data-icon="crouch"></i><span>Crouch (toggle)</span><i data-icon="dodge"></i><span>Dodge</span><i data-icon="reload"></i><span>Reload</span></div>
+        <div><i data-icon="swap"></i><span>Switch weapon</span><i data-icon="camera"></i><span>Camera</span><i data-icon="loadout"></i><span>Loadout</span><i data-icon="pause"></i><span>Pause</span></div>
+        <div><span class="note">Tap the team bar at the top to show the scoreboard.</span></div>
+      </div>
+      <div class="tips">
+        <p><b>Energy:</b> sprinting drains the energy bar. Below 6 you're exhausted and can't sprint until it recovers. It refills slowly while walking and fastest standing still.</p>
+        <p><b>Stealth:</b> enemies need line of sight. Crouch behind a wall, car, crate or low stone wall and they lose track of you. Bushes and vines hide you too (but bullets go straight through leaves).</p>
+        <p><b>Focus:</b> bots already in a firefight stay locked on their current target — a great moment to flank.</p>
+        <p><b>Accuracy:</b> stand still or crouch for tight shots. Moving and jumping widen your crosshair. Control recoil by pulling down while spraying.</p>
+        <p><b>Friendly fire is off</b> — your rounds pass through teammates. Headshots deal 4x damage. Backstabs with the Stiletto hit extra hard.</p>
+      </div>
+    </section>
+
+    <section id="panel-credits" class="panel hidden">
+      <h2>About</h2>
+      <p>Strike Counter 1 is an affectionate parody of tactical shooters, set in the sun-baked Italian town of <b>Bellavista</b> and the vineyards beyond its walls.</p>
+      <p>Everything you see and hear — buildings, trees, textures, guns, sounds — is generated procedurally in your browser with three.js and the Web Audio API.</p>
+      <p>No real-world brands were harmed. No gore: eliminated players turn red, tip over, and vanish in a puff of smoke.</p>
+    </section>
+  </div>
+
+  <!-- ============ HUD ============ -->
+  <div id="hud" class="hidden">
+    <div id="teambar"><div id="teamL" class="team"></div><div class="center"><div id="timer">0:00</div><div id="roundLbl"></div></div><div id="teamR" class="team"></div></div>
+    <canvas id="radar" width="190" height="190"></canvas>
+    <div id="killfeed"></div>
+    <div id="crosshair"><i class="l"></i><i class="r"></i><i class="t"></i><i class="b"></i><i class="d"></i></div>
+    <div id="hitmarker"><i></i><i></i><i></i><i></i></div>
+    <div id="dmgind"></div>
+    <div id="centermsg"><div id="cmBig"></div><div id="cmSmall"></div></div>
+    <div id="toast"></div>
+    <div id="hint"></div>
+    <div id="vitals">
+      <div class="vrow hp"><span class="ico">✚</span><b id="hpNum">100</b><div class="vbar"><i id="hpBar"></i></div></div>
+      <div class="vrow ar"><span class="ico">⛨</span><b id="arNum">100</b><div class="vbar"><i id="arBar"></i></div></div>
+      <div id="stamina"><span class="lbl">ENERGY</span><div class="vbar"><i id="stBar"></i><em></em></div><span id="stance">STAND</span></div>
+    </div>
+    <div id="ammo">
+      <div id="wName"></div>
+      <div class="count"><b id="ammoMag">30</b><span id="ammoRes">/ 90</span></div>
+      <div id="reloadBar"><i></i></div>
+      <div id="slots"><span>1</span><span>2</span><span>3</span><span>4</span></div>
+    </div>
+    <div id="scope"><div class="lens"></div><div class="h"></div><div class="v"></div></div>
+    <div id="cooldown"><i></i></div>
+    <div id="lowhp"></div>
+    <div id="fps"></div>
+    <div id="scoreboard"></div>
+  </div>
+
+  <!-- ============ DEATH ============ -->
+  <div id="death" class="overlay dim hidden">
+    <div class="deathbox">
+      <h1>ELIMINATED</h1>
+      <p id="deathKiller"></p>
+      <p id="deathCount" class="count"></p>
+      <div class="row"><button id="btnRespawn" class="cta" disabled>Respawn</button><button id="btnDeathMenu">Main Menu</button></div>
+    </div>
+  </div>
+
+  <!-- ============ BUY / LOADOUT ============ -->
+  <div id="buy" class="overlay dim hidden">
+    <div class="buybox">
+      <h2>Loadout <small>everything costs 0 lire</small></h2>
+      <h4>Primary</h4><div class="cards" id="buyPrimary"></div>
+      <h4>Secondary</h4><div class="cards" id="buySecondary"></div>
+      <p class="note" id="buyNote"></p>
+      <div class="row"><button id="btnBuyClose" class="cta">Done (B)</button></div>
+    </div>
+  </div>
+
+  <!-- ============ PAUSE ============ -->
+  <div id="pause" class="overlay dim hidden">
+    <div class="pausebox">
+      <h1>PAUSED</h1>
+      <button id="btnResume" class="cta">Resume</button>
+      <button id="btnPauseSettings">Settings</button>
+      <button id="btnPauseHelp">How to Play</button>
+      <button id="btnQuit">Quit to Main Menu</button>
+    </div>
+  </div>
+
+  <!-- ============ MATCH END ============ -->
+  <div id="matchend" class="overlay dim hidden">
+    <div class="endbox">
+      <h1 id="endTitle">VICTORY</h1>
+      <div id="endScores"></div>
+      <div class="row"><button id="btnAgain" class="cta">Play Again</button><button id="btnEndMenu">Main Menu</button></div>
+    </div>
+  </div>
+
+  <div id="clickToPlay" class="hidden">Click to continue</div>
+  <div id="rotate" class="hidden"><div class="phone"></div><p>Rotate your device to landscape</p></div>
+  <noscript>This game needs JavaScript and WebGL.</noscript>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
