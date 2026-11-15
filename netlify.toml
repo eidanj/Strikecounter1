@@ -3,12 +3,10 @@
   publish = "."
   command = ""
 
-[[headers]]
-  for = "/js/*"
-  [headers.values]
-    Cache-Control = "public, max-age=3600"
-
+# Always check for a newer version (Netlify uses ETags, so unchanged
+# files are still answered instantly with "304 Not Modified").
 [[headers]]
   for = "/*"
   [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
     X-Content-Type-Options = "nosniff"
